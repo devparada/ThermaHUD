@@ -3,5 +3,9 @@
 /obj
 /target
 
+# Carpetas y archivos que generan el pyinstaller
+/build
+/dist
+
 # Se genera a veces y se usa csproj en vez de sln
 *.sln
