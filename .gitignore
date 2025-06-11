@@ -1,3 +1,6 @@
 # Carpetas que se generan cuando se compila la .dll
 /bin
 /obj
+
+# Se genera a veces y se usa csproj en vez de sln
+*.sln
