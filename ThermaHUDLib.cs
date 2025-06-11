@@ -51,6 +51,50 @@ namespace ThermaHUDLib
             }
         }
 
+        public void PrintCpuSensors()
+        {
+            var computer = new Computer { IsCpuEnabled = true };
+
+            try
+            {
+                computer.Open();
+                foreach (var hardware in computer.Hardware)
+                {
+                    if (hardware.HardwareType != HardwareType.Cpu)
+                        continue;
+
+                    hardware.Update();
+                    Console.WriteLine(string.Format("{1}", hardware.HardwareType, hardware.Name));
+
+                    foreach (var sensor in hardware.Sensors)
+                    {
+                        if (sensor.SensorType == SensorType.Temperature)
+                        {
+                            Console.WriteLine(string.Format("  - Sensor: {0}, Value: {1} °C", sensor.Name, sensor.Value));
+                        }
+                    }
+
+                    foreach (var sub in hardware.SubHardware)
+                    {
+                        sub.Update();
+                        Console.WriteLine(string.Format("  {1}", sub.HardwareType, sub.Name));
+
+                        foreach (var sensor in sub.Sensors)
+                        {
+                            if (sensor.SensorType == SensorType.Temperature)
+                            {
+                                Console.WriteLine(string.Format("    - Sensor: {0}, Value: {1} °C", sensor.Name, sensor.Value));
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                computer.Close();
+            }
+        }
+
         public void VisitSensor(ISensor sensor) { }
 
         public void VisitParameter(IParameter parameter) { }

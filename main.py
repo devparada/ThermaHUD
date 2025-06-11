@@ -61,6 +61,9 @@ def main():
 
     reader = ThermaHUD()
     try:
+        print("=== MODO DEBUG: Sensores disponibles ===")
+        reader.PrintCpuSensors()
+
         while True:
             temp = reader.GetCpuTemperature()
             if temp is not None:
