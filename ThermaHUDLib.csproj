@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Compilado para .NET Framework 4.7.2, igual que LibreHardwareMonitorLib -->
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  
+  <ItemGroup>
+  <Reference Include="LibreHardwareMonitorLib">
+    <HintPath>lib\LibreHardwareMonitorLib.dll</HintPath>
+  </Reference>
+</ItemGroup>
+
+</Project>
