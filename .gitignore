@@ -1,0 +1,3 @@
+# Carpetas que se generan cuando se compila la .dll
+/bin
+/obj
