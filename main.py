@@ -8,7 +8,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Ruta relativa al DLL
 dll_path = os.path.join(
     script_dir,
-    "bin", "Debug", "net472", "ThermaHUDLib.dll"
+    "target", "ThermaHUDLib.dll"
 )
 
 # Cargamos el ensamblado con AddReference

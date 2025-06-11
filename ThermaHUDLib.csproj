@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Compilado para .NET Framework 4.7.2, igual que LibreHardwareMonitorLib -->
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <OutputType>Library</OutputType>
+    <!-- Crea el .dll en dist/ -->
+    <OutputPath>target/</OutputPath>
+    <!-- Estas dos líneas evitan la creación de la carpeta dist/net9.0 y deja los archivos en dist/ -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
   </PropertyGroup>
   
