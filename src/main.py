@@ -32,13 +32,11 @@ def print_cpu_sensors_simple(reader):
     for hw in sensors_list:
         print(f"Hardware: {hw.Name}")
         for sensor in hw.Sensors:
-            val = f"{sensor.Value:.1f}" if sensor.Value is not None else "N/A"
-            print(f"  Sensor: {sensor.Name} -> {val} °C")
+            print(f"  Sensor: {sensor.Name}")
         for sub in hw.SubHardwares:
             print(f"  SubHardware: {sub.Name}")
             for sensor in sub.Sensors:
-                val = f"{sensor.Value:.1f}" if sensor.Value is not None else "N/A"
-                print(f"    Sensor: {sensor.Name} -> {val} °C")
+                print(f"    Sensor: {sensor.Name}")
         print()  # línea vacía
 
 def resource_path(relative_path):
@@ -100,13 +98,15 @@ def main():
                 else:
                     color = Fore.RED
 
-                print(f"{Style.BRIGHT if COLORAMA else ''}CPU:{Style.RESET_ALL if COLORAMA else ''} "
+                linea = ("\r"f"{Style.BRIGHT if COLORAMA else ''}CPU:{Style.RESET_ALL if COLORAMA else ''} "
                 f"{color if COLORAMA else ''}{temp_text}{Style.RESET_ALL if COLORAMA else ''}")
 
+                sys.stdout.write('\r' + linea)             
+                sys.stdout.flush()
             else:
                 print("No se pudo leer la temperatura")
 
-            time.sleep(2)
+            time.sleep(1.5)
     except KeyboardInterrupt:
         print("\nLectura finalizada por el usuario")
 
