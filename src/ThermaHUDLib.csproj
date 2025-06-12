@@ -3,12 +3,19 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <!-- Crea el .dll en dist/ -->
+    <!-- Crea el .dll en ../target/ -->
     <OutputPath>../target/</OutputPath>
-    <!-- Estas dos líneas evitan la creación de la carpeta dist/net9.0 y deja los archivos en dist/ -->
+    <!-- Estas dos líneas evitan la creación de la carpeta ../target/net9.0 y deja los archivos en ../target/ -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>x64</Platforms>
+
+    <!-- Versión de la DLL -->
+    <Version>0.0.1</Version>
+    <FileVersion>0.0.1.0</FileVersion>
+    <Copyright>© 2025 devparada - GPLv3</Copyright>
+    <!-- No incluye el id de revisión de Git en la version -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   
   <ItemGroup>
