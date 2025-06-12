@@ -1,3 +1,3 @@
 @echo off
-pyinstaller ThermaHUD.spec
+pyinstaller --clean ThermaHUD.spec
 pause
