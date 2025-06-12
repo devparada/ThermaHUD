@@ -6,6 +6,13 @@ import shutil
 import tempfile
 import time
 
+try:
+    from colorama import init, Fore, Style
+    init()
+    COLORAMA = True
+except ImportError:
+    COLORAMA = False
+
 def add_dll_directory(path):
     # Agrega una ruta al directorio de búsqueda de DLL en Windows (solo de Windows 7 para adelante)
     if os.name == "nt":
@@ -82,10 +89,23 @@ def main():
 
         while True:
             temp = reader.GetCpuTemperature()
+
             if temp is not None:
-                print(f"Temp CPU: {temp:.1f} °C")
+                temp_text = f"{temp:.1f} C"
+
+                if temp is not None and temp < 60:
+                    color = Fore.GREEN
+                elif temp is not None and temp < 80:
+                      color = Fore.YELLOW
+                else:
+                    color = Fore.RED
+
+                print(f"{Style.BRIGHT if COLORAMA else ''}CPU:{Style.RESET_ALL if COLORAMA else ''} "
+                f"{color if COLORAMA else ''}{temp_text}{Style.RESET_ALL if COLORAMA else ''}")
+
             else:
                 print("No se pudo leer la temperatura")
+
             time.sleep(2)
     except KeyboardInterrupt:
         print("\nLectura finalizada por el usuario")
