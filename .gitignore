@@ -2,6 +2,7 @@
 /bin
 /obj
 /target
+/src/obj
 
 # Carpetas y archivos que generan el pyinstaller
 /build

@@ -10,7 +10,7 @@ def add_dll_directory(path):
     # Agrega una ruta al directorio de búsqueda de DLL en Windows (solo de Windows 7 para adelante)
     if os.name == "nt":
         try:
-            kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
             AddDllDirectory = kernel32.AddDllDirectory
             AddDllDirectory.argtypes = [ctypes.c_wchar_p]
             AddDllDirectory.restype = ctypes.c_void_p
@@ -20,16 +20,32 @@ def add_dll_directory(path):
         except Exception as e:
             print(f"[WARNING] No se pudo añadir ruta con AddDllDirectory: {e}")
 
-def main():
+def print_cpu_sensors_simple(reader):
+    sensors_list = reader.GetCpuSensors()
+    for hw in sensors_list:
+        print(f"Hardware: {hw.Name}")
+        for sensor in hw.Sensors:
+            val = f"{sensor.Value:.1f}" if sensor.Value is not None else "N/A"
+            print(f"  Sensor: {sensor.Name} -> {val} °C")
+        for sub in hw.SubHardwares:
+            print(f"  SubHardware: {sub.Name}")
+            for sensor in sub.Sensors:
+                val = f"{sensor.Value:.1f}" if sensor.Value is not None else "N/A"
+                print(f"    Sensor: {sensor.Name} -> {val} °C")
+        print()  # línea vacía
+
+def resource_path(relative_path):
     # Detecta la ruta base donde están las DLLs originales
-    if hasattr(sys, '_MEIPASS'):
-        base_path = sys._MEIPASS
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
     else:
         base_path = os.path.dirname(os.path.abspath(__file__))
+        return os.path.abspath(os.path.join(base_path, "..", relative_path))
 
+def main():
     # Rutas DLLs
-    bundled_dll_path = os.path.join(base_path, "target", "ThermaHUDLib.dll")
-    bundled_dep_dll_path = os.path.join(base_path, "lib", "LibreHardwareMonitorLib.dll")
+    bundled_dll_path = resource_path("target/ThermaHUDLib.dll")
+    bundled_dep_dll_path = resource_path("lib/LibreHardwareMonitorLib.dll")
 
     # Crear carpeta temporal para DLLs y copia de las DLLs
     temp_dir = tempfile.mkdtemp(prefix="thermahud_")
@@ -37,7 +53,7 @@ def main():
     shutil.copyfile(bundled_dep_dll_path, os.path.join(temp_dir, "LibreHardwareMonitorLib.dll"))
 
     # Añade la carpeta temporal al PATH para que Windows encuentre las DLLs dependientes
-    os.environ['PATH'] = temp_dir + os.pathsep + os.environ.get('PATH', '')
+    os.environ["PATH"] = temp_dir + os.pathsep + os.environ.get("PATH", "")
     add_dll_directory(temp_dir)
 
     extracted_dll_path = os.path.join(temp_dir, "ThermaHUDLib.dll")
@@ -62,7 +78,7 @@ def main():
     reader = ThermaHUD()
     try:
         print("=== MODO DEBUG: Sensores disponibles ===")
-        reader.PrintCpuSensors()
+        print_cpu_sensors_simple(reader)
 
         while True:
             temp = reader.GetCpuTemperature()
@@ -70,9 +86,9 @@ def main():
                 print(f"Temp CPU: {temp:.1f} °C")
             else:
                 print("No se pudo leer la temperatura")
-            time.sleep(1)
+            time.sleep(2)
     except KeyboardInterrupt:
-        print("\nLectura finalizada por el usuario.")
+        print("\nLectura finalizada por el usuario")
 
 if __name__ == "__main__":
     main()
