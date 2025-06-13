@@ -5,9 +5,13 @@ using LibreHardwareMonitor.Hardware;
 
 namespace ThermaHUDLib
 {
-    public class ThermaHUD : IVisitor
+    public class ThermaHUD : IVisitor, IDisposable
     {
-        private static readonly Computer computer = new Computer { IsCpuEnabled = true };
+        private static readonly Computer computer = new()
+        {
+            IsCpuEnabled = true
+        };
+
         private float? cpuTemperature = null;
         private static bool isInitialized = false;
 
@@ -20,13 +24,14 @@ namespace ThermaHUDLib
             }
         }
 
-        private List<SensorInfo> GetTemperatureSensors(ICollection<ISensor> sensors)
+        private static List<SensorInfo> GetTemperatureSensors(ICollection<ISensor> sensors)
         {
-            return sensors
+            return [.. sensors
                 .Where(s => s.SensorType == SensorType.Temperature)
-                .Select(s => new SensorInfo(s.Name, s.Value))
-                .ToList();
+                .Select(s => new SensorInfo(s.Name, s.Value))];
         }
+
+        // --- API LibreHardwareMonitorLib ---
 
         public float? GetCpuTemperature()
         {
@@ -36,39 +41,56 @@ namespace ThermaHUDLib
         }
         public List<SensorInfo> GetCpuTemperatureSensors()
         {
-            var sensors = new List<SensorInfo>();
+            return GetCpuHardware()
+                .SelectMany(GetAllTemperatureSensors)
+                .ToList();
+        }
 
-            foreach (var hardware in computer.Hardware)
-            {
-                if (hardware.HardwareType != HardwareType.Cpu)
-                    continue;
-
-                hardware.Update();
-
-                foreach (var sensor in hardware.Sensors)
+        public List<HardwareInfo> GetCpuSensors()
+        {
+            return GetCpuHardware()
+                .Select(hw =>
                 {
-                    if (sensor.SensorType == SensorType.Temperature)
+                    var hwInfo = new HardwareInfo(hw.Name)
                     {
-                        sensors.Add(new SensorInfo(sensor.Name, sensor.Value));
-                    }
-                }
+                        Sensors = GetTemperatureSensors(hw.Sensors)
+                    };
 
-                foreach (var sub in hardware.SubHardware)
-                {
-                    sub.Update();
-
-                    foreach (var sensor in sub.Sensors)
+                    foreach (var sub in hw.SubHardware)
                     {
-                        if (sensor.SensorType == SensorType.Temperature)
+                        sub.Update();
+                        hwInfo.SubHardwares.Add(new SubHardwareInfo(sub.Name)
                         {
-                            sensors.Add(new SensorInfo(sensor.Name, sensor.Value));
-                        }
+                            Sensors = GetTemperatureSensors(sub.Sensors)
+                        });
                     }
-                }
+
+                    return hwInfo;
+                }).ToList();
+        }
+
+        // --- Métodos privados ayudantes ---
+
+        private static IEnumerable<IHardware> GetCpuHardware()
+        {
+            return computer.Hardware.Where(h => h.HardwareType == HardwareType.Cpu);
+        }
+
+        private List<SensorInfo> GetAllTemperatureSensors(IHardware hardware)
+        {
+            hardware.Update();
+            var result = GetTemperatureSensors(hardware.Sensors);
+
+            foreach (var sub in hardware.SubHardware)
+            {
+                sub.Update();
+                result.AddRange(GetTemperatureSensors(sub.Sensors));
             }
 
-            return sensors;
+            return result;
         }
+
+        // --- Implementación de IVisitor ---
 
         public void VisitComputer(IComputer computer)
         {
@@ -85,7 +107,9 @@ namespace ThermaHUDLib
             {
                 var tctlSensors = hardware.Sensors
                     .Where(s => s.SensorType == SensorType.Temperature &&
-                                s.Name.IndexOf("Tctl/Tdie", StringComparison.OrdinalIgnoreCase) >= 0)
+                           s.Name != null &&
+                           (s.Name.ToLowerInvariant().Contains("tctl") ||
+                            s.Name.ToLowerInvariant().Contains("core")))
                     .ToArray();
 
                 if (tctlSensors.Length > 0)
@@ -95,36 +119,10 @@ namespace ThermaHUDLib
             }
         }
 
-        public List<HardwareInfo> GetCpuSensors()
-        {
-            var result = new List<HardwareInfo>();
+        public void VisitSensor(ISensor sensor) { }
+        public void VisitParameter(IParameter parameter) { }
 
-            foreach (var hardware in computer.Hardware)
-            {
-                if (hardware.HardwareType != HardwareType.Cpu)
-                    continue;
-
-                hardware.Update();
-                var hwInfo = new HardwareInfo(hardware.Name)
-                {
-                    Sensors = GetTemperatureSensors(hardware.Sensors)
-                };
-
-                foreach (var sub in hardware.SubHardware)
-                {
-                    sub.Update();
-                    var subInfo = new SubHardwareInfo(sub.Name)
-                    {
-                        Sensors = GetTemperatureSensors(sub.Sensors)
-                    };
-                    hwInfo.SubHardwares.Add(subInfo);
-                }
-
-                result.Add(hwInfo);
-            }
-
-            return result;
-        }
+        // --- Limpieza de recursos ---
 
         public void Dispose()
         {
@@ -133,10 +131,8 @@ namespace ThermaHUDLib
                 computer.Close();
                 isInitialized = false;
             }
+
+            GC.SuppressFinalize(this);
         }
-
-        public void VisitSensor(ISensor sensor) { }
-
-        public void VisitParameter(IParameter parameter) { }
     }
 }
