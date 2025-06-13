@@ -7,7 +7,18 @@ namespace ThermaHUDLib
 {
     public class ThermaHUD : IVisitor
     {
+        private static readonly Computer computer = new Computer { IsCpuEnabled = true };
         private float? cpuTemperature = null;
+        private static bool isInitialized = false;
+
+        public ThermaHUD()
+        {
+            if (!isInitialized)
+            {
+                computer.Open();
+                isInitialized = true;
+            }
+        }
 
         private List<SensorInfo> GetTemperatureSensors(ICollection<ISensor> sensors)
         {
@@ -20,62 +31,40 @@ namespace ThermaHUDLib
         public float? GetCpuTemperature()
         {
             cpuTemperature = null;
-            var computer = new Computer { IsCpuEnabled = true };
-
-            try
-            {
-                computer.Open();
-                computer.Accept(this);
-            }
-            finally
-            {
-                computer.Close();
-            }
-
+            computer.Accept(this);
             return cpuTemperature;
         }
-
         public List<SensorInfo> GetCpuTemperatureSensors()
         {
             var sensors = new List<SensorInfo>();
-            var computer = new Computer { IsCpuEnabled = true };
 
-            try
+            foreach (var hardware in computer.Hardware)
             {
-                computer.Open();
+                if (hardware.HardwareType != HardwareType.Cpu)
+                    continue;
 
-                foreach (var hardware in computer.Hardware)
+                hardware.Update();
+
+                foreach (var sensor in hardware.Sensors)
                 {
-                    if (hardware.HardwareType != HardwareType.Cpu)
-                        continue;
+                    if (sensor.SensorType == SensorType.Temperature)
+                    {
+                        sensors.Add(new SensorInfo(sensor.Name, sensor.Value));
+                    }
+                }
 
-                    hardware.Update();
+                foreach (var sub in hardware.SubHardware)
+                {
+                    sub.Update();
 
-                    foreach (var sensor in hardware.Sensors)
+                    foreach (var sensor in sub.Sensors)
                     {
                         if (sensor.SensorType == SensorType.Temperature)
                         {
                             sensors.Add(new SensorInfo(sensor.Name, sensor.Value));
                         }
                     }
-
-                    foreach (var sub in hardware.SubHardware)
-                    {
-                        sub.Update();
-
-                        foreach (var sensor in sub.Sensors)
-                        {
-                            if (sensor.SensorType == SensorType.Temperature)
-                            {
-                                sensors.Add(new SensorInfo(sensor.Name, sensor.Value));
-                            }
-                        }
-                    }
                 }
-            }
-            finally
-            {
-                computer.Close();
             }
 
             return sensors;
@@ -108,43 +97,42 @@ namespace ThermaHUDLib
 
         public List<HardwareInfo> GetCpuSensors()
         {
-            var computer = new Computer { IsCpuEnabled = true };
             var result = new List<HardwareInfo>();
 
-            try
+            foreach (var hardware in computer.Hardware)
             {
-                computer.Open();
+                if (hardware.HardwareType != HardwareType.Cpu)
+                    continue;
 
-                foreach (var hardware in computer.Hardware)
+                hardware.Update();
+                var hwInfo = new HardwareInfo(hardware.Name)
                 {
-                    if (hardware.HardwareType != HardwareType.Cpu)
-                        continue;
+                    Sensors = GetTemperatureSensors(hardware.Sensors)
+                };
 
-                    hardware.Update();
-                    var hwInfo = new HardwareInfo(hardware.Name)
+                foreach (var sub in hardware.SubHardware)
+                {
+                    sub.Update();
+                    var subInfo = new SubHardwareInfo(sub.Name)
                     {
-                        Sensors = GetTemperatureSensors(hardware.Sensors)
+                        Sensors = GetTemperatureSensors(sub.Sensors)
                     };
-
-                    foreach (var sub in hardware.SubHardware)
-                    {
-                        sub.Update();
-                        var subInfo = new SubHardwareInfo(sub.Name)
-                        {
-                            Sensors = GetTemperatureSensors(sub.Sensors)
-                        };
-                        hwInfo.SubHardwares.Add(subInfo);
-                    }
-
-                    result.Add(hwInfo);
+                    hwInfo.SubHardwares.Add(subInfo);
                 }
-            }
-            finally
-            {
-                computer.Close();
+
+                result.Add(hwInfo);
             }
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            if (isInitialized)
+            {
+                computer.Close();
+                isInitialized = false;
+            }
         }
 
         public void VisitSensor(ISensor sensor) { }

@@ -93,6 +93,8 @@ def main():
             time.sleep(1.5)
     except KeyboardInterrupt:
         print("\nLectura finalizada por el usuario")
+    finally:
+        reader.Dispose()
 
 if __name__ == "__main__":
     main()
