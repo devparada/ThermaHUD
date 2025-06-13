@@ -37,6 +37,35 @@ def print_cpu_sensors_simple(reader):
                 print(f"    Sensor: {sensor.Name}")
         print()  # línea vacía
 
+
+def get_temperature_color(temp):
+    if temp < 65:
+        return Fore.GREEN
+    elif temp < 80:
+        return Fore.YELLOW
+    else:
+        return Fore.RED
+
+def print_temperature(reader):
+    try:
+        temp = reader.GetCpuTemperature()
+        if temp is None:
+            print("No se pudo leer la temperatura")
+            return
+
+        temp_text = f"{temp:.1f} °C"
+        color = get_temperature_color(temp) if COLORAMA else ""
+        bright = Style.BRIGHT if COLORAMA else ""
+        reset = Style.RESET_ALL if COLORAMA else ""
+
+        line = f"\r{bright}CPU:{reset} {color}{temp_text}{reset}"
+        sys.stdout.write(line)
+        sys.stdout.flush()
+    except Exception as e:
+        print(f"\n[ERROR] Fallo al leer temperatura: {e}")
+
+    time.sleep(1.5)
+
 def main():
     # Rutas DLLs
     if hasattr(sys, "_MEIPASS"):
@@ -66,31 +95,11 @@ def main():
     reader = ThermaHUD()
 
     try:
-        print("=== MODO DEBUG: Sensores disponibles ===")
+        print("=== INFO: Sensores disponibles ===")
         print_cpu_sensors_simple(reader)
 
         while True:
-            temp = reader.GetCpuTemperature()
-
-            if temp is not None:
-                temp_text = f"{temp:.1f} C"
-
-                if temp is not None and temp < 60:
-                    color = Fore.GREEN
-                elif temp is not None and temp < 80:
-                      color = Fore.YELLOW
-                else:
-                    color = Fore.RED
-
-                linea = ("\r"f"{Style.BRIGHT if COLORAMA else ''}CPU:{Style.RESET_ALL if COLORAMA else ''} "
-                f"{color if COLORAMA else ''}{temp_text}{Style.RESET_ALL if COLORAMA else ''}")
-
-                sys.stdout.write('\r' + linea)             
-                sys.stdout.flush()
-            else:
-                print("No se pudo leer la temperatura")
-
-            time.sleep(1.5)
+            print_temperature(reader)
     except KeyboardInterrupt:
         print("\nLectura finalizada por el usuario")
     finally:
