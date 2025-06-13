@@ -4,7 +4,7 @@
 a = Analysis(
     ['src/main.py'],
     pathex=[],
-    binaries=[('target/ThermaHUDLib.dll', 'target'), ('lib/LibreHardwareMonitorLib.dll', 'lib')],
+    binaries=[('target/ThermaHUDLib.dll', 'libs'), ('lib/LibreHardwareMonitorLib.dll', 'libs')],
     datas=[],
     hiddenimports=[],
     hookspath=[],
