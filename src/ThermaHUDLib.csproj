@@ -11,8 +11,8 @@
     <Platforms>x64</Platforms>
 
     <!-- Versión de la DLL -->
-    <Version>0.0.1</Version>
-    <FileVersion>0.0.1.0</FileVersion>
+    <Version>0.0.2</Version>
+    <FileVersion>0.0.2.0</FileVersion>
     <Copyright>© 2025 devparada - GPLv3</Copyright>
     <!-- No incluye el id de revisión de Git en la version -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
