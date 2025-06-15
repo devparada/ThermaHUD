@@ -10,5 +10,5 @@ if '%errorlevel%' NEQ '0' (
 
 :: —————— Si ya se ejecuta como admin ——————
 cd /d "%~dp0"
-python main.py
+python src/main.py
 pause
