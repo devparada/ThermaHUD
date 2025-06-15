@@ -109,7 +109,7 @@ namespace ThermaHUDLib
                     .Where(s => s.SensorType == SensorType.Temperature &&
                            s.Name != null &&
                            (s.Name.ToLowerInvariant().Contains("tctl") ||
-                            s.Name.ToLowerInvariant().Contains("core")))
+                            s.Name.ToLowerInvariant().Contains("package")))
                     .ToArray();
 
                 if (tctlSensors.Length > 0)
