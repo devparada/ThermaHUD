@@ -1,0 +1,2 @@
+# Contiene las DLLs .NET que ThermaHUD necesita para leer el hardware.
+# No se versionan: se regeneran solas (tools/update_libs.py, build.bat).
