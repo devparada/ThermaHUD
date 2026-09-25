@@ -1,12 +1,15 @@
-# Carpetas que se generan cuando se compila la .dll
-/bin
-/obj
-/target
-/src/obj
-
 # Carpetas y archivos que generan el pyinstaller
-/build
-/dist
+/build/
+/dist/
 
-# Se genera a veces y se usa csproj en vez de sln
-*.sln
+# Carpetas de desarrollo
+.idea/
+.venv/
+
+# Caché de Python
+__pycache__/
+
+# DLLs de lib/ fuera de versionado (se regeneran con tools/update_libs.py);
+# .gitkeep se versiona para que la carpeta exista en clones frescos
+/lib/*
+!/lib/.gitkeep
